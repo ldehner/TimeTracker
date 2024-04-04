@@ -1,6 +1,6 @@
 import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { Component, inject } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { ActivatedRoute, RouterOutlet } from '@angular/router';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -74,10 +74,21 @@ const headers = { Authorization: ENV.API_KEY };
   styleUrl: './app.component.scss',
 })
 export class AppComponent {
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient, private route: ActivatedRoute) {}
   // OnInit
   ngOnInit() {
     this.fetchProjects();
+    this.route.queryParams.subscribe((params) => {
+      if (params['password'] === ENV.PASSWORD) {
+        this.authorized = true;
+        this.showNotification = false;
+      } else {
+        this.notification = 'Nicht authorisiert';
+        this.isSuccess = false;
+        this.isError = true;
+        this.showNotification = true;
+      }
+    });
   }
   // states
   isLoading = false;
@@ -85,6 +96,7 @@ export class AppComponent {
   notification = '';
   isError = false;
   isSuccess = false;
+  authorized = false;
 
   // form
   date = new FormControl(new Date());

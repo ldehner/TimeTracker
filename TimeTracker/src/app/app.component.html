@@ -6,7 +6,7 @@
 <div [ngClass]="{ error: isError, success: isSuccess }" class="banner">
   {{ notification }}
 </div>
-}
+} @if (authorized) {
 <div class="wrapper">
   <h2>TimeTracker</h2>
   <div class="shortcuts">
@@ -76,7 +76,7 @@
       [disabled]="isLoading"
       [readonly]="isLoading"
       (click)="picker.open()"
-      (keydown)="false"
+      (keydown)="(false)"
     />
     <mat-datepicker-toggle
       [disabled]="isLoading"
@@ -136,3 +136,4 @@
     Speichern
   </button>
 </div>
+}
