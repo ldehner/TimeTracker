@@ -14,7 +14,7 @@
       [disabled]="isLoading"
       mat-raised-button
       color="primary"
-      (click)="getProjects()"
+      (click)="daily()"
     >
       Daily
     </button>
@@ -29,6 +29,7 @@
       [formControl]="projectControl"
       [matAutocomplete]="auto1"
       [readonly]="isLoading"
+      [(ngModel)]="projectSearch"
     />
 
     <mat-autocomplete #auto1="matAutocomplete">
@@ -40,6 +41,29 @@
           {{ project[1] }}
         </mat-option>
       </ng-container>
+    </mat-autocomplete>
+  </mat-form-field>
+
+  <mat-form-field appearance="fill">
+    <mat-label>Task</mat-label>
+    <input
+      type="text"
+      placeholder="Task wählen"
+      aria-label="Task"
+      matInput
+      [formControl]="taskControl"
+      [matAutocomplete]="auto2"
+      [readonly]="isLoading"
+      [(ngModel)]="taskSearch"
+    />
+    <mat-autocomplete #auto2="matAutocomplete">
+      <mat-option
+        (onSelectionChange)="taskSelected(task[0])"
+        *ngFor="let task of filteredTasks | async"
+        [value]="task[1]"
+      >
+        {{ task[1] }}
+      </mat-option>
     </mat-autocomplete>
   </mat-form-field>
   <mat-form-field appearance="fill">
@@ -59,46 +83,48 @@
     ></mat-datepicker-toggle>
     <mat-datepicker [disabled]="isLoading" #picker></mat-datepicker>
   </mat-form-field>
-  <mat-form-field appearance="fill">
-    <mat-label>Task</mat-label>
-    <input
-      type="text"
-      placeholder="Task wählen"
-      aria-label="Task"
-      matInput
-      [formControl]="taskControl"
-      [matAutocomplete]="auto2"
-      [readonly]="isLoading"
-    />
-    <mat-autocomplete #auto2="matAutocomplete">
-      <mat-option *ngFor="let task of filteredTasks | async" [value]="task[1]">
-        {{ task[1] }}
-      </mat-option>
-    </mat-autocomplete>
-  </mat-form-field>
-  <mat-form-field>
-    <mat-label>Von</mat-label>
-    <input [disabled]="isLoading" type="time" matInput [ngModel]="from" />
-  </mat-form-field>
-  <mat-form-field>
-    <mat-label>Bis</mat-label>
-    <input [disabled]="isLoading" type="time" matInput [ngModel]="to" />
-  </mat-form-field>
+  <div class="timepicker-wrapper">
+    <mat-form-field class="timepicker">
+      <mat-label>Von</mat-label>
+      <input [disabled]="isLoading" type="time" matInput [(ngModel)]="from" />
+    </mat-form-field>
+    <button
+      mat-icon-button
+      color="primary"
+      aria-label="Example icon button with a home icon"
+      class="timepicker-button"
+      (click)="setFrom()"
+      [disabled]="isLoading"
+    >
+      <mat-icon>play_circle</mat-icon>
+    </button>
+  </div>
+  <div class="timepicker-wrapper">
+    <mat-form-field class="timepicker">
+      <mat-label>Bis</mat-label>
+      <input [disabled]="isLoading" type="time" matInput [(ngModel)]="to" />
+    </mat-form-field>
+    <button
+      mat-icon-button
+      color="primary"
+      aria-label="Example icon button with a home icon"
+      class="timepicker-button"
+      (click)="setTo()"
+      [disabled]="isLoading"
+    >
+      <mat-icon>stop_circle</mat-icon>
+    </button>
+  </div>
   <mat-form-field>
     <mat-label>Bezeichnung</mat-label>
-    <input
-      [disabled]="isLoading"
-      type="text"
-      matInput
-      [ngModel]="bezeichnung"
-    />
+    <input [disabled]="isLoading" type="text" matInput [(ngModel)]="title" />
   </mat-form-field>
   <mat-form-field>
     <mat-label>Kommentar</mat-label>
-    <input [disabled]="isLoading" type="text" matInput [ngModel]="kommentar" />
+    <input [disabled]="isLoading" type="text" matInput [(ngModel)]="comment" />
   </mat-form-field>
   <div class="slider-wrapper">
-    <mat-slide-toggle [disabled]="isLoading" class="slider" [ngModel]="status"
+    <mat-slide-toggle [disabled]="isLoading" class="slider" [(ngModel)]="status"
       >Abgeschlossen</mat-slide-toggle
     >
   </div>
@@ -106,7 +132,7 @@
     [disabled]="isLoading"
     mat-raised-button
     color="primary"
-    (click)="getDate()"
+    (click)="save()"
   >
     Speichern
   </button>

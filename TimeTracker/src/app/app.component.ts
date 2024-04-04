@@ -6,7 +6,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
-import { Observable, map, startWith } from 'rxjs';
+import { Observable, map, startWith, switchMap } from 'rxjs';
 import { HttpParams } from '@angular/common/http';
 import { catchError, of, firstValueFrom } from 'rxjs';
 import { ENV } from '../../envitonment';
@@ -18,6 +18,8 @@ import { FormsModule } from '@angular/forms';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { CommonModule } from '@angular/common';
+import { MatIconButton } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
 import {
   MAT_MOMENT_DATE_ADAPTER_OPTIONS,
   MatMomentDateModule,
@@ -50,6 +52,7 @@ const headers = { Authorization: ENV.API_KEY };
   ],
   imports: [
     RouterOutlet,
+    MatIconModule,
     MatAutocompleteModule,
     MatFormFieldModule,
     MatInputModule,
@@ -65,6 +68,7 @@ const headers = { Authorization: ENV.API_KEY };
     MatSlideToggleModule,
     MatProgressSpinnerModule,
     CommonModule,
+    MatIconButton,
   ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',
@@ -74,7 +78,6 @@ export class AppComponent {
   // OnInit
   ngOnInit() {
     this.fetchProjects();
-    this.setupFilters();
   }
   // states
   isLoading = false;
@@ -85,13 +88,15 @@ export class AppComponent {
 
   // form
   date = new FormControl(new Date());
-  kommentar = '';
-  bezeichnung = '';
+  comment = '-';
+  title = '';
   status = false;
   from = this.setCurrentTime();
   to = this.setCurrentTime();
   selectedProject: any;
-  selectedTask: [string, string] = ['', ''];
+  selectedTask: any;
+  projectSearch = '';
+  taskSearch = '';
 
   // ===============================================================================
   /**
@@ -103,12 +108,15 @@ export class AppComponent {
   tasks: [string, string][] = [];
   filteredProjects: Observable<[string, string][]> = new Observable();
   filteredTasks: Observable<[string, string][]> = new Observable();
-  private setupFilters() {
+  private setupProjectFilters() {
+    this.filteredProjects = new Observable();
     this.filteredProjects = this.projectControl.valueChanges.pipe(
       startWith(''),
       map((value) => this.filter('projects', value))
     );
-
+  }
+  private setupTaskFilters() {
+    this.filteredTasks = new Observable();
     this.filteredTasks = this.taskControl.valueChanges.pipe(
       startWith(''),
       map((value) => this.filter('tasks', value))
@@ -135,7 +143,7 @@ export class AppComponent {
       tmpDate =
         tmp.year +
         '-' +
-        this.leadingZero(tmp.month) +
+        this.leadingZero(tmp.month + 1) +
         '-' +
         this.leadingZero(tmp.date);
     } else {
@@ -143,7 +151,7 @@ export class AppComponent {
     }
     return tmpDate;
   }
-  setCurrentTime() {
+  private setCurrentTime() {
     const now = new Date();
     const hours = now.getHours().toString().padStart(2, '0');
     const minutes = now.getMinutes().toString().padStart(2, '0');
@@ -153,9 +161,43 @@ export class AppComponent {
   private leadingZero(value: number) {
     return value < 10 ? '0' + value : value;
   }
-  log() {
-    console.log('log');
-    console.log(this.selectedProject);
+
+  public taskSelected(id: string) {
+    this.selectedTask = id;
+  }
+
+  private reset() {
+    this.comment = '-';
+    this.title = '';
+    this.status = false;
+    this.from = this.setCurrentTime();
+    this.to = this.setCurrentTime();
+    this.selectedProject = '';
+    this.selectedTask = '';
+    this.projectSearch = '';
+    this.taskSearch = '';
+  }
+
+  private notify() {
+    this.showNotification = true;
+    setTimeout(() => {
+      this.showNotification = false;
+    }, 3000);
+  }
+
+  public daily() {
+    this.from = '08:45';
+    this.to = '09:00';
+    this.title = 'Daily';
+    this.comment = 'Meeting - Standup';
+  }
+
+  public setFrom() {
+    this.from = this.setCurrentTime();
+  }
+
+  public setTo() {
+    this.to = this.setCurrentTime();
   }
 
   // ===============================================================================
@@ -164,32 +206,44 @@ export class AppComponent {
    */
 
   public fetchProjects() {
+    this.projects = [];
     this.getProjects().then((projects: any) => {
       if (projects === null) {
         this.notification = 'Fehler beim Abrufen der Projekte';
         this.isSuccess = false;
         this.isError = true;
-        this.showNotification = true;
+        this.notify();
         return;
       }
       projects.forEach((project: any) => {
         this.projects.push([project.id, project.name]);
       });
+      this.setupProjectFilters();
     });
   }
 
   public projectSelected(id: string) {
+    this.selectedProject = id;
+    this.tasks = [];
     this.getTasks({ project: id }).then((tasks: any) => {
       if (tasks === null) {
         this.notification = 'Feher beim Abrufen der Tasks';
         this.isSuccess = false;
         this.isError = true;
-        this.showNotification = true;
+        this.notify();
         return;
       }
-      tasks.forEach((task: any) => {
-        this.tasks.push([task.id, task.name]);
-      });
+      try {
+        tasks.forEach((task: any) => {
+          this.tasks.push([task.id, task.name]);
+        });
+        this.setupTaskFilters();
+      } catch (error) {
+        this.notification = 'Kein Task für dieses Projekt gefunden';
+        this.isSuccess = false;
+        this.isError = true;
+        this.notify();
+      }
     });
   }
 
@@ -200,24 +254,26 @@ export class AppComponent {
       from: this.from,
       to: this.to,
       project: this.selectedProject,
-      task: this.selectedTask[0],
-      comment: this.kommentar,
-      status: this.status,
+      task: this.selectedTask,
+      kommentar: this.comment,
+      status: this.status ? 'Erledigt' : 'In Bearbeitung',
+      bezeichnung: this.title,
     };
     this.postLog(body).then((response: any) => {
       if (response === null) {
         this.notification = 'Fehler beim Speichern des Eintrags';
         this.isSuccess = false;
         this.isError = true;
-        this.showNotification = true;
+        this.notify();
         this.isLoading = false;
         return;
       }
       this.notification = 'Eintrag erfolgreich gespeichert';
       this.isSuccess = true;
       this.isError = false;
-      this.showNotification = true;
+      this.notify();
       this.isLoading = false;
+      this.reset();
     });
   }
 
@@ -247,7 +303,7 @@ export class AppComponent {
     return await firstValueFrom(observable);
   }
   async postLog(body: { [key: string]: any }) {
-    const observable = this.http.post('/log', body, { headers }).pipe(
+    const observable = this.http.post(ENV.URL + '/log', body, { headers }).pipe(
       catchError(() => {
         return of(null);
       })

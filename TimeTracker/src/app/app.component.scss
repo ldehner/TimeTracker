@@ -39,3 +39,15 @@
   background-color: #4caf50;
   color: white;
 }
+.timepicker {
+  width: 95%;
+}
+.timepicker-wrapper {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+}
+.timepicker-button {
+  margin-bottom: 22px;
+}
