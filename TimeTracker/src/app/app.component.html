@@ -75,6 +75,8 @@
       [formControl]="date"
       [disabled]="isLoading"
       [readonly]="isLoading"
+      (click)="picker.open()"
+      (keydown)="false"
     />
     <mat-datepicker-toggle
       [disabled]="isLoading"
@@ -83,38 +85,35 @@
     ></mat-datepicker-toggle>
     <mat-datepicker [disabled]="isLoading" #picker></mat-datepicker>
   </mat-form-field>
-  <div class="timepicker-wrapper">
-    <mat-form-field class="timepicker">
-      <mat-label>Von</mat-label>
-      <input [disabled]="isLoading" type="time" matInput [(ngModel)]="from" />
-    </mat-form-field>
+  <mat-form-field>
+    <mat-label>Von</mat-label>
+    <input [disabled]="isLoading" type="time" matInput [(ngModel)]="from" />
     <button
       mat-icon-button
       color="primary"
       aria-label="Example icon button with a home icon"
-      class="timepicker-button"
       (click)="setFrom()"
       [disabled]="isLoading"
+      matSuffix
     >
       <mat-icon>play_circle</mat-icon>
     </button>
-  </div>
-  <div class="timepicker-wrapper">
-    <mat-form-field class="timepicker">
-      <mat-label>Bis</mat-label>
-      <input [disabled]="isLoading" type="time" matInput [(ngModel)]="to" />
-    </mat-form-field>
+  </mat-form-field>
+
+  <mat-form-field>
+    <mat-label>Bis</mat-label>
+    <input [disabled]="isLoading" type="time" matInput [(ngModel)]="to" />
     <button
       mat-icon-button
       color="primary"
       aria-label="Example icon button with a home icon"
-      class="timepicker-button"
       (click)="setTo()"
       [disabled]="isLoading"
+      matSuffix
     >
       <mat-icon>stop_circle</mat-icon>
     </button>
-  </div>
+  </mat-form-field>
   <mat-form-field>
     <mat-label>Bezeichnung</mat-label>
     <input [disabled]="isLoading" type="text" matInput [(ngModel)]="title" />

@@ -248,6 +248,30 @@ export class AppComponent {
   }
 
   public async save() {
+    if (this.projectSearch === '' || this.taskSearch === '') {
+      this.notification = 'Bitte Projekt und Task auswählen';
+      this.isSuccess = false;
+      this.isError = true;
+      this.notify();
+      return;
+    }
+    if (this.title === '') {
+      this.notification = 'Bitte Titel eingeben';
+      this.isSuccess = false;
+      this.isError = true;
+      this.notify();
+      return;
+    }
+    if (this.comment === '') {
+      this.comment = '-';
+    }
+    if (this.from === this.to) {
+      this.notification = 'Bitte unterschiedliche Zeiten eingeben';
+      this.isSuccess = false;
+      this.isError = true;
+      this.notify();
+      return;
+    }
     this.isLoading = true;
     const body = {
       date: this.getDate(),
