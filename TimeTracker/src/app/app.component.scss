@@ -1,8 +1,19 @@
 .wrapper {
   display: flex;
   flex-direction: column;
+  width: 100%;
+  max-width: 500px;
   padding: 1rem;
 }
+
+.all {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  padding: 1rem;
+}
+
 
 .header {
   display: flex;
