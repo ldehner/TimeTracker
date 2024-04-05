@@ -180,6 +180,7 @@ export class AppComponent {
    * Helper Functions
    */
   public getDate(date: any) {
+    console.log(date);
     let tmpDate = '';
     if (date instanceof Date === false) {
       const tmp = (date as any)._i;
@@ -190,8 +191,9 @@ export class AppComponent {
         '-' +
         this.leadingZero(tmp.date);
     } else {
-      tmpDate = date.toISOString().split('T')[0];
+      tmpDate = date.getFullYear() + '-' + this.leadingZero(date.getMonth() + 1) + '-' + this.leadingZero(date.getDate());
     }
+    console.log(tmpDate);
     return tmpDate;
   }
   private setCurrentTime() {
@@ -418,7 +420,7 @@ export class AppComponent {
       from: from,
       to: to,
     };
-    this.downloadExcel(queryParams).then((response: any) => {
+    this.downloadExcel(queryParams, from, to).then((response: any) => {
       if (response === null) {
         this.notification = 'Fehler beim Download';
         this.isSuccess = false;
@@ -490,7 +492,11 @@ export class AppComponent {
     return firstValueFrom(observable);
   }
 
-  async downloadExcel(queryParams: { [key: string]: string }) {
+  async downloadExcel(
+    queryParams: { [key: string]: string },
+    from: string,
+    to: string
+  ) {
     let params = new HttpParams();
     for (const key of Object.keys(queryParams)) {
       params = params.append(key, queryParams[key]);
@@ -510,7 +516,7 @@ export class AppComponent {
         // Proceed to create the download link as before
         const anchor = document.createElement('a');
         anchor.href = URL.createObjectURL(blob);
-        anchor.download = 'filename.xlsx';
+        anchor.download = `Logs_${from}_${to}.xlsx`;
 
         document.body.appendChild(anchor);
         anchor.click();
