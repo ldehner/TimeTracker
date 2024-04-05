@@ -1,7 +1,23 @@
 .wrapper {
   display: flex;
   flex-direction: column;
+  width: 100%;
+  max-width: 500px;
+}
+
+.all {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
   padding: 1rem;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-direction: row;
 }
 
 .slider-wrapper {
@@ -13,7 +29,7 @@
 
 .shortcuts {
   display: flex;
-  justify-content: flex-start;
+  justify-content: space-between;
   align-items: center;
   flex-direction: row;
   padding-bottom: 1rem;
@@ -24,19 +40,22 @@
   justify-content: center;
   align-items: center;
   height: 3rem;
-  position: absolute;
+  position: fixed;
   top: 0;
   left: 0;
   width: 100vw;
+  z-index: 1000;
 }
 
 .error {
   background-color: #f44336;
+  opacity: 0.9;
   color: white;
 }
 
 .success {
   background-color: #4caf50;
+  opacity: 0.9;
   color: white;
 }
 .timepicker {
