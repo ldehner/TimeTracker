@@ -4,6 +4,13 @@
   padding: 1rem;
 }
 
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-direction: row;
+}
+
 .slider-wrapper {
   display: flex;
   justify-content: center;

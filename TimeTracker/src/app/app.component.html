@@ -8,7 +8,19 @@
 </div>
 } @if (authorized) {
 <div class="wrapper">
-  <h2>TimeTracker</h2>
+  <div class="header">
+    <h2>TimeTracker</h2>
+    <button
+      mat-mini-fab
+      color="primary"
+      [disabled]="isLoading"
+      (click)="openDialog()"
+      aria-label="Example icon button with a bookmark icon"
+    >
+      <mat-icon>download</mat-icon>
+    </button>
+  </div>
+
   <div class="shortcuts">
     <button
       [disabled]="isLoading"
@@ -71,7 +83,6 @@
     <input
       matInput
       [matDatepicker]="picker"
-      (dateChange)="getDate()"
       [formControl]="date"
       [disabled]="isLoading"
       [readonly]="isLoading"

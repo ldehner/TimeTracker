@@ -1,5 +1,5 @@
 import { HttpClient, HttpClientModule } from '@angular/common/http';
-import { Component, inject } from '@angular/core';
+import { Component, Inject, inject } from '@angular/core';
 import { ActivatedRoute, RouterOutlet } from '@angular/router';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -9,7 +9,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { Observable, map, startWith, switchMap } from 'rxjs';
 import { HttpParams } from '@angular/common/http';
 import { catchError, of, firstValueFrom } from 'rxjs';
-import { ENV } from '../../envitonment';
+import { ENV } from '../../environment';
 import { AsyncPipe } from '@angular/common';
 import { NgFor } from '@angular/common';
 import { MatDatepickerModule } from '@angular/material/datepicker';
@@ -21,12 +21,22 @@ import { CommonModule } from '@angular/common';
 import { MatIconButton } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import {
+  MatDialog,
+  MAT_DIALOG_DATA,
+  MatDialogRef,
+  MatDialogTitle,
+  MatDialogContent,
+  MatDialogActions,
+  MatDialogClose,
+} from '@angular/material/dialog';
+import {
   MAT_MOMENT_DATE_ADAPTER_OPTIONS,
   MatMomentDateModule,
   MomentDateAdapter,
 } from '@angular/material-moment-adapter';
 
 import { DateAdapter, MAT_DATE_FORMATS } from '@angular/material/core';
+import { DownloadComponent } from './download/download.component';
 const MY_DATE_FORMAT = {
   parse: {
     dateInput: 'DD/MM/YYYY', // this is how your date will be parsed from Input
@@ -38,6 +48,10 @@ const MY_DATE_FORMAT = {
     monthYearA11yLabel: 'MMMM YYYY',
   },
 };
+export interface DialogData {
+  from: string;
+  to: string;
+}
 const headers = { Authorization: ENV.API_KEY };
 @Component({
   selector: 'app-root',
@@ -74,7 +88,11 @@ const headers = { Authorization: ENV.API_KEY };
   styleUrl: './app.component.scss',
 })
 export class AppComponent {
-  constructor(private http: HttpClient, private route: ActivatedRoute) {}
+  constructor(
+    private http: HttpClient,
+    private route: ActivatedRoute,
+    public dialog: MatDialog
+  ) {}
   // OnInit
   ngOnInit() {
     this.fetchProjects();
@@ -146,12 +164,25 @@ export class AppComponent {
 
   // ===============================================================================
   /**
+   * Dialog
+   */
+  openDialog(): void {
+    const dialogRef = this.dialog.open(DownloadComponent);
+
+    dialogRef.afterClosed().subscribe((result) => {
+      if (!result) return;
+      this.download(this.getDate(result.from), this.getDate(result.to));
+    });
+  }
+
+  // ===============================================================================
+  /**
    * Helper Functions
    */
-  public getDate() {
+  public getDate(date: any) {
     let tmpDate = '';
-    if (this.date.value instanceof Date === false) {
-      const tmp = (this.date.value as any)._i;
+    if (date instanceof Date === false) {
+      const tmp = (date as any)._i;
       tmpDate =
         tmp.year +
         '-' +
@@ -159,7 +190,7 @@ export class AppComponent {
         '-' +
         this.leadingZero(tmp.date);
     } else {
-      tmpDate = this.date.value.toISOString().split('T')[0];
+      tmpDate = date.toISOString().split('T')[0];
     }
     return tmpDate;
   }
@@ -286,7 +317,7 @@ export class AppComponent {
     }
     this.isLoading = true;
     const body = {
-      date: this.getDate(),
+      date: this.getDate(this.date.value),
       from: this.from,
       to: this.to,
       project: this.selectedProject,
@@ -310,6 +341,29 @@ export class AppComponent {
       this.notify();
       this.isLoading = false;
       this.reset();
+    });
+  }
+
+  public download(from: string, to: string) {
+    this.isLoading = true;
+    const queryParams = {
+      from: from,
+      to: to,
+    };
+    this.downloadExcel(queryParams).then((response: any) => {
+      if (response === null) {
+        this.notification = 'Fehler beim Download';
+        this.isSuccess = false;
+        this.isError = true;
+        this.isLoading = false;
+        this.notify();
+        return;
+      }
+      this.notification = 'Download erfolgreich';
+      this.isSuccess = true;
+      this.isError = false;
+      this.isLoading = false;
+      this.notify();
     });
   }
 
@@ -345,5 +399,42 @@ export class AppComponent {
       })
     );
     return firstValueFrom(observable);
+  }
+
+  async downloadExcel(queryParams: { [key: string]: string }) {
+    let params = new HttpParams();
+    for (const key of Object.keys(queryParams)) {
+      params = params.append(key, queryParams[key]);
+    }
+    const httpOptions = {
+      headers: headers,
+      params: params,
+      responseType: 'arraybuffer' as 'arraybuffer', // This tells Angular to expect a Blob as response
+    };
+
+    this.http.get(ENV.URL + '/logs', httpOptions).subscribe(
+      (arrayBuffer) => {
+        const blob = new Blob([arrayBuffer], {
+          type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        });
+
+        // Proceed to create the download link as before
+        const anchor = document.createElement('a');
+        anchor.href = URL.createObjectURL(blob);
+        anchor.download = 'filename.xlsx';
+
+        document.body.appendChild(anchor);
+        anchor.click();
+        document.body.removeChild(anchor);
+
+        URL.revokeObjectURL(anchor.href);
+      },
+      (error) => {
+        this.isError = true;
+        this.isSuccess = false;
+        this.notification = 'Fehler beim Download';
+        this.notify();
+      }
+    );
   }
 }
