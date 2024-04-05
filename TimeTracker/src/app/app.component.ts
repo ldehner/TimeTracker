@@ -209,7 +209,7 @@ export class AppComponent {
     this.selectedTask = id;
   }
 
-  private reset() {
+  public reset() {
     this.comment = '-';
     this.title = '';
     this.status = false;
@@ -228,7 +228,14 @@ export class AppComponent {
     }, 3000);
   }
 
-  public daily() {
+  public async daily() {
+    const result = await this.fetchMeeting();
+    if (result) {
+      this.fetchDaily(result[0].id);
+    } else {
+      console.log('No result from fetchMeeting');
+    }
+
     this.from = '08:45';
     this.to = '09:00';
     this.title = 'Daily';
@@ -247,6 +254,67 @@ export class AppComponent {
   /**
    * Handlers
    */
+
+  public fetchDaily(project: any) {
+    this.tasks = [];
+    this.getDaily({ project: project }).then((tasks: any) => {
+      if (tasks === null) {
+        this.notification = 'Fehler beim Abrufen des Dailys';
+        this.isSuccess = false;
+        this.isError = true;
+        this.notify();
+        return;
+      }
+      if (tasks.length === 0) {
+        this.notification = 'Kein Daily für dieses Projekt gefunden';
+        this.isSuccess = false;
+        this.isError = true;
+        this.notify();
+        return;
+      }
+      if (tasks[0] === null) {
+        this.notification = 'Kein Daily für dieses Projekt gefunden';
+        this.isSuccess = false;
+        this.isError = true;
+        this.notify();
+        return;
+      }
+      this.tasks.push([tasks[0].id, tasks[0].name]);
+      this.selectedTask = tasks[0].id;
+      this.taskSearch = tasks[0].name;
+      this.setupTaskFilters();
+    });
+  }
+
+  public async fetchMeeting() {
+    this.projects = [];
+    try {
+      const projects: any = await this.getMeeting(); // Await the promise resolution
+      if (projects === null) {
+        this.notification = 'Fehler beim Abrufen der Projekte';
+        this.isSuccess = false;
+        this.isError = true;
+        this.notify();
+        return null; // Ensure you return a value indicating failure or lack of projects
+      }
+
+      projects.forEach((project: any) => {
+        this.projects.push([project.id, project.name]);
+        this.selectedProject = project.id;
+        this.projectSearch = project.name;
+      });
+      this.setupProjectFilters();
+      return projects; // Return the projects or some relevant value at the end
+    } catch (error) {
+      console.error(error);
+      // Handle any errors that might occur during getMeeting
+      this.notification = 'Error message here';
+      this.isSuccess = false;
+      this.isError = true;
+      this.notify();
+      return null; // Return a value indicating an error occurred
+    }
+  }
 
   public fetchProjects() {
     this.projects = [];
@@ -379,6 +447,14 @@ export class AppComponent {
     );
     return await firstValueFrom(observable);
   }
+  async getMeeting() {
+    const observable = this.http.get(ENV.URL + '/meeting', { headers }).pipe(
+      catchError(() => {
+        return of(null);
+      })
+    );
+    return await firstValueFrom(observable);
+  }
   async getTasks(queryParams: { [key: string]: string }) {
     let params = new HttpParams();
     for (const key of Object.keys(queryParams)) {
@@ -386,6 +462,19 @@ export class AppComponent {
     }
     const options = { params: params, headers: headers };
     const observable = this.http.get(ENV.URL + '/tasks', options).pipe(
+      catchError(() => {
+        return of(null);
+      })
+    );
+    return await firstValueFrom(observable);
+  }
+  async getDaily(queryParams: { [key: string]: string }) {
+    let params = new HttpParams();
+    for (const key of Object.keys(queryParams)) {
+      params = params.append(key, queryParams[key]);
+    }
+    const options = { params: params, headers: headers };
+    const observable = this.http.get(ENV.URL + '/daily', options).pipe(
       catchError(() => {
         return of(null);
       })

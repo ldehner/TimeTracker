@@ -23,13 +23,21 @@
     </div>
 
     <div class="shortcuts">
+      <button [disabled]="isLoading" mat-raised-button (click)="daily()">
+        Daily
+      </button>
+      <button [disabled]="isLoading" mat-raised-button (click)="fetchMeeting()">
+        Meeting Projekt
+      </button>
       <button
         [disabled]="isLoading"
         mat-raised-button
-        color="primary"
-        (click)="daily()"
+        (click)="fetchProjects()"
       >
-        Daily
+        Alle Projekte
+      </button>
+      <button [disabled]="isLoading" mat-raised-button (click)="reset()">
+        Reset
       </button>
     </div>
     <mat-form-field appearance="fill">
