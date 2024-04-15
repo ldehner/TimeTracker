@@ -1,0 +1,104 @@
+@if (isLoading) {
+    <div class="banner">
+      Wird gespeichert ... <mat-spinner diameter="20"></mat-spinner>
+    </div>
+    } @if (showNotification) {
+    <div [ngClass]="{ error: isError, success: isSuccess }" class="banner">
+      {{ notification }}
+    </div>
+    } @if (authorized) {
+    <div class="all">
+      <div class="wrapper">
+        <div class="header">
+          <h2>ToDo Creator</h2>
+        </div>
+        <mat-form-field appearance="fill">
+          <mat-label>Projekt</mat-label>
+          <input
+            type="text"
+            placeholder="Projekt wählen"
+            aria-label="Projekt"
+            matInput
+            [formControl]="projectControl"
+            [matAutocomplete]="auto1"
+            [readonly]="isLoading"
+            [(ngModel)]="projectSearch"
+          />
+    
+          <mat-autocomplete #auto1="matAutocomplete">
+            <ng-container *ngFor="let project of filteredProjects | async">
+              <mat-option
+                (onSelectionChange)="projectSelected(project[0])"
+                [value]="project[1]"
+              >
+                {{ project[1] }}
+              </mat-option>
+            </ng-container>
+          </mat-autocomplete>
+        </mat-form-field>
+    
+        <mat-form-field appearance="fill">
+          <mat-label>Task</mat-label>
+          <input
+            type="text"
+            placeholder="Task wählen"
+            aria-label="Task"
+            matInput
+            [formControl]="taskControl"
+            [matAutocomplete]="auto2"
+            [readonly]="isLoading"
+            [(ngModel)]="taskSearch"
+          />
+          <mat-autocomplete #auto2="matAutocomplete">
+            <mat-option
+              (onSelectionChange)="taskSelected(task[0])"
+              *ngFor="let task of filteredTasks | async"
+              [value]="task[1]"
+            >
+              {{ task[1] }}
+            </mat-option>
+          </mat-autocomplete>
+        </mat-form-field>
+        <mat-form-field appearance="fill">
+          <mat-label>Bis</mat-label>
+          <input
+            matInput
+            [matDatepicker]="picker"
+            [formControl]="date"
+            [disabled]="isLoading"
+            [readonly]="isLoading"
+            (click)="picker.open()"
+            (keydown)="(false)"
+          />
+          <mat-datepicker-toggle
+            [disabled]="isLoading"
+            matSuffix
+            [for]="picker"
+          ></mat-datepicker-toggle>
+          <mat-datepicker [disabled]="isLoading" #picker></mat-datepicker>
+        </mat-form-field>
+        <mat-form-field>
+          <mat-label>Bezeichnung</mat-label>
+          <input [disabled]="isLoading" type="text" matInput [(ngModel)]="title" />
+        </mat-form-field>
+        <mat-form-field>
+          <mat-label>Beschreibung</mat-label>
+          <textarea
+            [disabled]="isLoading"
+            type="text"
+            matInput
+            [(ngModel)]="comment"
+            ></textarea>
+        </mat-form-field>
+        <button
+          [disabled]="isLoading"
+          mat-raised-button
+          color="primary"
+          (click)="save()"
+        >
+          Speichern
+        </button>
+      </div>
+    </div>
+    }
+    
