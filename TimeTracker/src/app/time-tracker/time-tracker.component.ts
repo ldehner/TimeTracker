@@ -1,5 +1,5 @@
 import { HttpClient, HttpClientModule } from '@angular/common/http';
-import { Component, Inject, inject } from '@angular/core';
+import { Component } from '@angular/core';
 import { ActivatedRoute, RouterOutlet } from '@angular/router';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -20,17 +20,8 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { CommonModule } from '@angular/common';
 import { MatIconButton } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { MatDialog } from '@angular/material/dialog';
 import {
-  MatDialog,
-  MAT_DIALOG_DATA,
-  MatDialogRef,
-  MatDialogTitle,
-  MatDialogContent,
-  MatDialogActions,
-  MatDialogClose,
-} from '@angular/material/dialog';
-import {
-  MAT_MOMENT_DATE_ADAPTER_OPTIONS,
   MatMomentDateModule,
   MomentDateAdapter,
 } from '@angular/material-moment-adapter';
@@ -191,7 +182,12 @@ export class TimeTrackerComponent {
         '-' +
         this.leadingZero(tmp.date);
     } else {
-      tmpDate = date.getFullYear() + '-' + this.leadingZero(date.getMonth() + 1) + '-' + this.leadingZero(date.getDate());
+      tmpDate =
+        date.getFullYear() +
+        '-' +
+        this.leadingZero(date.getMonth() + 1) +
+        '-' +
+        this.leadingZero(date.getDate());
     }
     console.log(tmpDate);
     return tmpDate;
@@ -221,6 +217,8 @@ export class TimeTrackerComponent {
     this.selectedTask = '';
     this.projectSearch = '';
     this.taskSearch = '';
+    this.projectControl = new FormControl();
+    this.taskControl = new FormControl();
     this.setupProjectFilters();
     this.setupTaskFilters();
   }

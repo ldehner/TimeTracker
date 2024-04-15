@@ -170,16 +170,15 @@ export class TodoCreatorComponent {
         '-' +
         this.leadingZero(tmp.date);
     } else {
-      tmpDate = date.getFullYear() + '-' + this.leadingZero(date.getMonth() + 1) + '-' + this.leadingZero(date.getDate());
+      tmpDate =
+        date.getFullYear() +
+        '-' +
+        this.leadingZero(date.getMonth() + 1) +
+        '-' +
+        this.leadingZero(date.getDate());
     }
     console.log(tmpDate);
     return tmpDate;
-  }
-  private setCurrentTime() {
-    const now = new Date();
-    const hours = now.getHours().toString().padStart(2, '0');
-    const minutes = now.getMinutes().toString().padStart(2, '0');
-    return `${hours}:${minutes}`;
   }
 
   private leadingZero(value: number) {
@@ -197,6 +196,8 @@ export class TodoCreatorComponent {
     this.selectedTask = '';
     this.projectSearch = '';
     this.taskSearch = '';
+    this.projectControl = new FormControl();
+    this.taskControl = new FormControl();
     this.setupProjectFilters();
     this.setupTaskFilters();
   }
@@ -321,11 +322,13 @@ export class TodoCreatorComponent {
     return await firstValueFrom(observable);
   }
   async postTodo(body: { [key: string]: any }) {
-    const observable = this.http.post(ENV.URL + '/tc/todo', body, { headers }).pipe(
-      catchError(() => {
-        return of(null);
-      })
-    );
+    const observable = this.http
+      .post(ENV.URL + '/tc/todo', body, { headers })
+      .pipe(
+        catchError(() => {
+          return of(null);
+        })
+      );
     return firstValueFrom(observable);
   }
 }
