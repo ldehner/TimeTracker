@@ -1,0 +1,35 @@
+<div class="demo-app">
+  <div class="demo-app-main">
+    <div id="external-events">
+      @for (project of projects; track $index) { @if (tasks.get(project[0])) {
+      <div class="project">
+        {{ project[1] }}
+
+        @for (task of tasks.get(project[0]); track $index) {
+        <div
+          class="draggable"
+          draggable="true"
+          (dragstart)="handleDragStart($event, task, project[0])"
+        >
+          {{ task[1] }}
+          <div class="metadata" style="display: none">
+            <span class="project">{{ project[0] }}</span>
+            <span class="task">{{ task[0] }}</span>
+          </div>
+        </div>
+        }
+      </div>
+      } }
+    </div>
+    <full-calendar
+      *ngIf="calendarVisible()"
+      (eventDragStop)="eventDragStop($event)"
+      [options]="calendarOptions()"
+    >
+      <ng-template #eventContent let-arg>
+        <b>{{ arg.timeText }}</b>
+        <i>{{ " " + arg.event.title }}</i>
+      </ng-template>
+    </full-calendar>
+  </div>
+</div>

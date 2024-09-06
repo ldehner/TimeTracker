@@ -20,6 +20,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { CommonModule } from '@angular/common';
 import { MatIconButton } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { TimeCalendarTrackerComponent } from './time-calendar-tracker/time-calendar-tracker.component';
 import { MatDialog } from '@angular/material/dialog';
 import {
   MatMomentDateModule,
@@ -74,6 +75,7 @@ const headers = { Authorization: ENV.API_KEY };
     MatProgressSpinnerModule,
     CommonModule,
     MatIconButton,
+    TimeCalendarTrackerComponent,
   ],
   templateUrl: './time-tracker.component.html',
   styleUrl: './time-tracker.component.scss',
@@ -91,6 +93,9 @@ export class TimeTrackerComponent {
       if (params['password'] === ENV.PASSWORD) {
         this.authorized = true;
         this.showNotification = false;
+        if (params['calendar'] === '1') {
+          this.isTracker = false;
+        }
       } else {
         this.notification = 'Nicht authorisiert';
         this.isSuccess = false;
@@ -106,6 +111,7 @@ export class TimeTrackerComponent {
   isError = false;
   isSuccess = false;
   authorized = false;
+  isTracker = true;
 
   // form
   date = new FormControl(new Date());

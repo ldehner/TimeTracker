@@ -8,7 +8,7 @@
 </div>
 } @if (authorized) {
 <div class="all">
-  <div class="wrapper">
+  <div class="wrapper {{ !isTracker ? 'max-wrapper' : '' }}">
     <div class="header">
       <h2>TimeTracker</h2>
       <button
@@ -40,6 +40,7 @@
         Reset
       </button>
     </div>
+    @if (isTracker) {
     <mat-form-field appearance="fill">
       <mat-label>Projekt</mat-label>
       <input
@@ -163,6 +164,9 @@
     >
       Speichern
     </button>
+    } @else {
+    <app-time-calendar-tracker></app-time-calendar-tracker>
+    }
   </div>
 </div>
 }
